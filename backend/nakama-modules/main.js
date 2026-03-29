@@ -49,8 +49,9 @@ const matchInit = function(ctx, logger, nk, params) {
     status: "waiting",
     timerDeadline: 0,
     moveCount: 0,
+    timedMode: !!(params && params.timedMode),
   };
-  return { state, tickRate: 1, label: JSON.stringify({ open: true }) };
+  return { state, tickRate: 1, label: JSON.stringify({ open: true, timedMode: state.timedMode }) };
 };
 
 const matchJoinAttempt = function(ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
@@ -77,7 +78,7 @@ const matchJoin = function(ctx, logger, nk, dispatcher, tick, state, presences) 
     state.status = "playing";
     const xPlayer = symbolToUserId(state, "X");
     state.turn = xPlayer;
-    state.timerDeadline = Date.now() + TURN_TIMEOUT_MS;
+    state.timerDeadline = state.timedMode ? Date.now() + TURN_TIMEOUT_MS : 0;
 
     dispatcher.matchLabelUpdate(JSON.stringify({ open: false }));
     dispatcher.broadcastMessage(1, JSON.stringify({
@@ -238,7 +239,10 @@ const rpcFindOrCreateMatch = function(ctx, logger, nk, payload) {
 
   const matches = nk.matchList(10, true, null, null, null, "");
   const open = matches.find(m => {
-    try { return JSON.parse(m.label || "{}").open === true; }
+    try { 
+      const label = JSON.parse(m.label || "{}");
+      return label.open === true && label.timedMode === timedMode; 
+    }
     catch (_) { return false; }
   });
 
