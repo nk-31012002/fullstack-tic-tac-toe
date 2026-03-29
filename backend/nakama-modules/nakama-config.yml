@@ -1,0 +1,21 @@
+name: nakama
+data_dir: /nakama/data
+
+logger:
+  level: info
+  stdout: true
+
+runtime:
+  path: /nakama/data/modules
+  js_entrypoint: main.js
+
+session:
+  token_expiry_sec: 86400
+
+socket:
+  server_key: defaultkey
+
+console:
+  port: 7351
+  username: admin
+  password: adminpassword
